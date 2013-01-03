@@ -10,6 +10,9 @@
     "type": "hg",
     "url": "https://bitbucket.org/maghoff/resource-tree"
   },
+  "bugs": {
+    "url": "https://bitbucket.org/maghoff/resource-tree/issues"
+  },
   "keywords": [
     "http",
     "resource"
