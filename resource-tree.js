@@ -93,6 +93,34 @@ function DirectLookup(resourceFactory) {
 }
 
 
+function PermanentRedirectResource(relativeTargetUrl) {
+    function redirect(req, res) {
+        var parsedUrl = url.parse(req.url);
+        var targetPath = url.resolve(parsedUrl.path, relativeTargetUrl);
+        parsedUrl.pathname = targetPath;
+        var targetUrl = url.format(parsedUrl);
+
+        res.writeHead(301, {
+            "Location": targetUrl,
+            "Content-Type": "text/plain"
+        });
+
+        if (req.method !== 'HEAD') {
+            res.write("Go see " + targetUrl);
+        }
+        res.end();
+    }
+
+    return {
+        http_GET: redirect,
+        http_HEAD: redirect,
+        http_POST: redirect,
+        http_PUT: redirect,
+        http_DELETE: redirect
+    };
+}
+
+
 function methodNotAllowed(res, resource) {
     var allow = [];
     for (var member in resource) {
@@ -126,6 +154,8 @@ function createServer(root) {
     return http.createServer(function (req, res) {
         console.log('[req] ' + req.url);
 
+        res.setHeader("Server", "resource-tree/0.0.0");
+
         pathname = url.parse(req.url).pathname;
         root.lookup(pathname, function(resource) {
             if (resource === null) {
@@ -145,4 +175,5 @@ exports.FileResource = FileResource;
 exports.FileLookup = FileLookup;
 exports.DirectLookup = DirectLookup;
 exports.OneLevelLookup = OneLevelLookup;
+exports.PermanentRedirectResource = PermanentRedirectResource;
 exports.createServer = createServer;
