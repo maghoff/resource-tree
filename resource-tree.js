@@ -42,7 +42,7 @@ function FileResource(fullpath) {
     };
 
     return {
-        handle: function(req, res) {
+        http_GET: function(req, res) {
             var ext = path.extname(fullpath);
             var contentType = contentTypes[ext] || 'text/plain';
 
@@ -83,6 +83,35 @@ function OneLevelLookup(resourceFactory) {
 }
 
 
+function methodNotAllowed(res, resource) {
+    var allow = [];
+    for (var member in resource) {
+        if (member.substr(0, 5) === 'http_') {
+            allow.push(member.substr(5));
+        }
+    }
+
+    res.writeHead(405, {
+        'Content-Type': 'text/plain',
+        'Allow': allow.join(', ')
+    });
+    res.end("Method Not Allowed");
+}
+
+
+// TODO: Should implement OPTIONS in this library
+// TODO: Should have dynamically configurable allowedMethods per server instance
+var allowedMethods = ["GET", "HEAD", "PUT", "POST", "DELETE"];
+function dispatchToResource(req, res, resource) {
+    if (allowedMethods.indexOf(req.method) === -1) methodNotAllowed(res, resource);
+
+    var functionName = 'http_' + req.method;
+    var functionObject = resource[functionName];
+
+    if (typeof functionObject === 'function') functionObject(req, res);
+    else methodNotAllowed(res, resource);
+}
+
 function createServer(root) {
     return http.createServer(function (req, res) {
         console.log('[req] ' + req.url);
@@ -93,7 +122,7 @@ function createServer(root) {
                 res.writeHead(404, {'Content-Type': 'text/plain'});
                 res.end('Not found\n');
             } else {
-                resource.handle(req, res);
+                dispatchToResource(req, res, resource);
             }
         });
     });
