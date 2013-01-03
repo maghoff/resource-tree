@@ -1,6 +1,6 @@
 {
   "name": "resource-tree",
-  "version": "0.0.0",
+  "version": "0.0.0-1",
   "description": "A useful separation of lookup and resources for implementing a HTTP server.",
   "main": "resource-tree.js",
   "scripts": {
