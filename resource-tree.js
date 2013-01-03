@@ -69,12 +69,22 @@ function FileLookup(root) {
 }
 
 
-function OneLevelLookup(resourceFactory) {
+function OneLevelLookup(lookupFactory) {
     return {
         lookup: function(reqpath, callback) {
             var split = splitOneLevel(reqpath);
-            if (split[1] === '') {
-                callback(resourceFactory(split[0]));
+            var nestedLookup = lookupFactory(split[0]);
+            nestedLookup.lookup(split[1], callback);
+        }
+    };
+}
+
+
+function DirectLookup(resourceFactory) {
+    return {
+        lookup: function(reqpath, callback) {
+            if (reqpath === '') {
+                resourceFactory(callback);
             } else {
                 callback(null);
             }
@@ -133,5 +143,6 @@ exports.splitOneLevel = splitOneLevel;
 exports.MapLookup = MapLookup;
 exports.FileResource = FileResource;
 exports.FileLookup = FileLookup;
+exports.DirectLookup = DirectLookup;
 exports.OneLevelLookup = OneLevelLookup;
 exports.createServer = createServer;
