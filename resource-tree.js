@@ -29,6 +29,26 @@ function Lookup() {
     verifyNew(this, this.constructor.name);
 }
 
+Lookup.prototype.doLookup = function (lookupish, path, callback) {
+    if (lookupish === undefined) {
+        callback(null);
+    } else if (lookupish instanceof Lookup) {
+        lookupish.lookup(path, callback);
+    } else if (lookupish instanceof Resource) {
+        var resource = lookupish;
+        callback(resource);
+    } else if (typeof lookupish === 'function') {
+        var resourceFactory = lookupish;
+        resourceFactory(callback);
+    } else if (typeof lookupish === 'object') {
+        var lookup = new MapLookup(lookupish);
+        lookup.lookup(path, callback);
+    } else {
+        throw "Not a lookup or lookup-like object";
+    }
+}
+
+
 function Resource() {
     verifyNew(this, this.constructor.name);
 }
@@ -42,11 +62,7 @@ function MapLookup(map) {
         var splitpath = splitOneLevel(reqpath);
         var dirname = splitpath[0], rest = splitpath[1];
         var lookup = map[dirname];
-        if (typeof lookup === 'undefined') {
-            callback(null);
-        } else {
-            lookup.lookup(rest, callback);
-        }
+        this.doLookup(lookup, rest, callback);
     };
 }
 
@@ -104,7 +120,7 @@ function OneLevelLookup(lookupFactory) {
     this.lookup = function(reqpath, callback) {
         var split = splitOneLevel(reqpath);
         var nestedLookup = lookupFactory(split[0]);
-        nestedLookup.lookup(split[1], callback);
+        this.doLookup(nestedLookup, split[1], callback);
     };
 }
 
@@ -199,7 +215,7 @@ function createServer(root) {
         res.setHeader("Server", "resource-tree/0.0.0");
 
         pathname = url.parse(req.url).pathname;
-        root.lookup(pathname, function(resource) {
+        Lookup.prototype.doLookup(root, pathname, function(resource) {
             if (resource === null) {
                 res.writeHead(404, {'Content-Type': 'text/plain'});
                 res.end('Not found\n');
