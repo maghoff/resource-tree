@@ -166,13 +166,11 @@ function PermanentRedirectResource(relativeTargetUrl) {
         res.end();
     }
 
-    return {
-        http_GET: redirect,
-        http_HEAD: redirect,
-        http_POST: redirect,
-        http_PUT: redirect,
-        http_DELETE: redirect
-    };
+    this.http_GET = redirect;
+    this.http_HEAD = redirect;
+    this.http_POST = redirect;
+    this.http_PUT = redirect;
+    this.http_DELETE = redirect;
 }
 
 PermanentRedirectResource.prototype = new Resource();
