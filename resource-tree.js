@@ -5,6 +5,9 @@ var assert = require('assert');
 var fs = require('fs');
 
 
+var module = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf-8'));
+
+
 function verifyNew(that, fname) {
     if (this === that) throw "Missing new on invocation of constructor " + fname;
 }
@@ -210,7 +213,7 @@ function createServer(root) {
     return http.createServer(function (req, res) {
         console.log('[req] ' + req.url);
 
-        res.setHeader("Server", "resource-tree/0.0.0");
+        res.setHeader("Server", module.name + "/" + module.version);
 
         pathname = url.parse(req.url).pathname;
         Lookup.prototype.doLookup(root, pathname, function(resource) {
