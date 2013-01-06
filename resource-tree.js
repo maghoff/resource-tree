@@ -5,6 +5,11 @@ var assert = require('assert');
 var fs = require('fs');
 
 
+function verifyNew(that, fname) {
+    if (this === that) throw "Missing new on invocation of constructor " + fname;
+}
+
+
 function splitOneLevel(full) {
     if (full.length !== 0) assert.equal(full.charAt(0), '/');
     var i = full.indexOf('/', 1);
@@ -20,80 +25,114 @@ function splitOneLevel(full) {
 }
 
 
+function Lookup() {
+    verifyNew(this, this.constructor.name);
+}
+
+function Resource() {
+    verifyNew(this, this.constructor.name);
+}
+
+
 function MapLookup(map) {
-    return {
-        lookup: function(reqpath, callback) {
-            var splitpath = splitOneLevel(reqpath);
-            var dirname = splitpath[0], rest = splitpath[1];
-            var lookup = map[dirname];
-            if (typeof lookup === 'undefined') {
-                callback(null);
-            } else {
-                lookup.lookup(rest, callback);
-            }
+    verifyNew(this, this.constructor.name);
+    Lookup.call(this);
+
+    this.lookup = function(reqpath, callback) {
+        var splitpath = splitOneLevel(reqpath);
+        var dirname = splitpath[0], rest = splitpath[1];
+        var lookup = map[dirname];
+        if (typeof lookup === 'undefined') {
+            callback(null);
+        } else {
+            lookup.lookup(rest, callback);
         }
     };
 }
 
+MapLookup.prototype = new Lookup();
+MapLookup.constructor = MapLookup;
+
+
 function FileResource(fullpath) {
+    verifyNew(this, this.constructor.name);
+    Resource.call(this);
+
     var contentTypes = {
         '.html': 'text/html',
         '.js': 'text/javascript'
     };
 
-    return {
-        http_GET: function(req, res) {
-            var ext = path.extname(fullpath);
-            var contentType = contentTypes[ext] || 'text/plain';
+    this.http_GET = function(req, res) {
+        var ext = path.extname(fullpath);
+        var contentType = contentTypes[ext] || 'text/plain';
 
-            res.writeHead(200, {'Content-Type': contentType});
-            var f = fs.createReadStream(fullpath);
-            f.pipe(res);
-        }
-    }
+        res.writeHead(200, {'Content-Type': contentType});
+        var f = fs.createReadStream(fullpath);
+        f.pipe(res);
+    };
 }
+
+FileResource.prototype = new Resource();
+FileResource.constructor = FileResource;
+
 
 function FileLookup(root) {
-    return {
-        lookup: function(reqpath, callback) {
-            var fullpath = path.join(root, reqpath);
-            fs.exists(fullpath, function(exists) {
-                if (exists) {
-                    callback(FileResource(fullpath));
-                } else {
-                    callback(null);
-                }
-            });
-        }
-    };
-}
+    verifyNew(this, this.constructor.name);
+    Lookup.call(this);
 
-
-function OneLevelLookup(lookupFactory) {
-    return {
-        lookup: function(reqpath, callback) {
-            var split = splitOneLevel(reqpath);
-            var nestedLookup = lookupFactory(split[0]);
-            nestedLookup.lookup(split[1], callback);
-        }
-    };
-}
-
-
-function DirectLookup(resourceFactory) {
-    return {
-        lookup: function(reqpath, callback) {
-            if (reqpath === '') {
-                resourceFactory(callback);
+    this.lookup = function(reqpath, callback) {
+        var fullpath = path.join(root, reqpath);
+        fs.exists(fullpath, function(exists) {
+            if (exists) {
+                callback(new FileResource(fullpath));
             } else {
                 callback(null);
             }
+        });
+    };
+}
+
+FileLookup.prototype = new Lookup();
+FileLookup.constructor = FileLookup;
+
+
+function OneLevelLookup(lookupFactory) {
+    verifyNew(this, this.constructor.name);
+    Lookup.call(this);
+
+    this.lookup = function(reqpath, callback) {
+        var split = splitOneLevel(reqpath);
+        var nestedLookup = lookupFactory(split[0]);
+        nestedLookup.lookup(split[1], callback);
+    };
+}
+
+OneLevelLookup.prototype = new Lookup();
+OneLevelLookup.constructor = OneLevelLookup;
+
+
+function DirectLookup(resourceFactory) {
+    verifyNew(this, this.constructor.name);
+    Lookup.call(this);
+
+    this.lookup = function(reqpath, callback) {
+        if (reqpath === '') {
+            resourceFactory(callback);
+        } else {
+            callback(null);
         }
     };
 }
 
+DirectLookup.prototype = new Lookup();
+DirectLookup.constructor = DirectLookup;
+
 
 function PermanentRedirectResource(relativeTargetUrl) {
+    verifyNew(this, this.constructor.name);
+    Resource.call(this);
+
     function redirect(req, res) {
         var parsedUrl = url.parse(req.url);
         var targetPath = url.resolve(parsedUrl.path, relativeTargetUrl);
@@ -119,6 +158,9 @@ function PermanentRedirectResource(relativeTargetUrl) {
         http_DELETE: redirect
     };
 }
+
+PermanentRedirectResource.prototype = new Resource();
+PermanentRedirectResource.constructor = PermanentRedirectResource;
 
 
 function methodNotAllowed(res, resource) {
@@ -170,6 +212,8 @@ function createServer(root) {
 
 
 exports.splitOneLevel = splitOneLevel;
+exports.Lookup = Lookup;
+exports.Resource = Resource;
 exports.MapLookup = MapLookup;
 exports.FileResource = FileResource;
 exports.FileLookup = FileLookup;
