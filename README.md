@@ -3,6 +3,8 @@ resource-tree
 
 A useful separation of lookup and resources for implementing a HTTP server.
 
+Installation: `npm install resource-tree`
+
 Small example:
 
     var resource_tree = require('resource-tree');
