@@ -209,32 +209,45 @@ function dispatchToResource(req, res, resource) {
     else methodNotAllowed(res, resource);
 }
 
-function createServer(root) {
-    return http.createServer(function (req, res) {
-        console.log('[req] ' + req.url);
+function handleRequest(root, req, res) {
+    console.log('[req] ' + req.url);
 
-        res.setHeader("Server", module.name + "/" + module.version);
+    res.setHeader("Server", module.name + "/" + module.version);
 
-        pathname = url.parse(req.url).pathname;
-        Lookup.prototype.doLookup(root, pathname, function(resource) {
-            if (resource === null) {
-                res.writeHead(404, {'Content-Type': 'text/plain'});
-                res.end('Not found\n');
-            } else {
-                dispatchToResource(req, res, resource);
-            }
-        });
+    pathname = url.parse(req.url).pathname;
+    Lookup.prototype.doLookup(root, pathname, function(resource) {
+        if (resource === null) {
+            res.writeHead(404, {'Content-Type': 'text/plain'});
+            res.end('Not found\n');
+        } else {
+            dispatchToResource(req, res, resource);
+        }
     });
+}
+
+function handleRequestFunction(root) {
+    return function (req, res) {
+        handleRequest(root, req, res);
+    };
+}
+
+function createServer(root) {
+    return http.createServer(handleRequestFunction(root));
 }
 
 
 exports.splitOneLevel = splitOneLevel;
+
 exports.Lookup = Lookup;
-exports.Resource = Resource;
 exports.MapLookup = MapLookup;
-exports.FileResource = FileResource;
 exports.FileLookup = FileLookup;
 exports.DirectLookup = DirectLookup;
 exports.OneLevelLookup = OneLevelLookup;
+
+exports.Resource = Resource;
+exports.FileResource = FileResource;
 exports.PermanentRedirectResource = PermanentRedirectResource;
+
+exports.handleRequest = handleRequest;
+exports.handleRequestFunction = handleRequestFunction;
 exports.createServer = createServer;
