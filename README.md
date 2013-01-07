@@ -1,7 +1,7 @@
 resource-tree
 =============
 
-A useful separation of lookup and resources for implementing a HTTP server.
+A useful separation of lookup (URL parsing) and resources for implementing a HTTP server.
 
 Installation: `npm install resource-tree`
 

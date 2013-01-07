@@ -1,7 +1,7 @@
 {
   "name": "resource-tree",
   "version": "0.0.0-4",
-  "description": "A useful separation of lookup (URL-parsing) and resources for implementing a HTTP server.",
+  "description": "A useful separation of lookup (URL parsing) and resources for implementing a HTTP server.",
   "main": "resource-tree.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
