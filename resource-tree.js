@@ -205,7 +205,7 @@ function dispatchToResource(req, res, resource) {
     var functionName = 'http_' + req.method;
     var functionObject = resource[functionName];
 
-    if (typeof functionObject === 'function') functionObject(req, res);
+    if (typeof functionObject === 'function') functionObject.call(resource, req, res);
     else methodNotAllowed(res, resource);
 }
 

@@ -1,7 +1,7 @@
 resource-tree
 =============
 
-A useful separation of lookup (URL parsing) and resources for implementing a HTTP server.
+A useful separation of lookup (URL parsing/routing) and resources for implementing a HTTP server.
 
 Installation: `npm install resource-tree`
 
@@ -19,7 +19,13 @@ Small example:
     console.log("Now you can GET http://127.0.0.1:8080/example.js");
     console.log("Everything else is properly handled as 404 (Not Found) or 405 (Method Not Allowed)");
 
-See [example-fileresource.js][1] and [example-custom-resource.js][2] for slightly more.
+Examples by use-case:
+
+ * I want to read a simple example: [example-fileresource.js][1]
+ * I want to serve a file directly from disk: [example-fileresource.js][1]
+ * I want to create a simple custom resource: [example-custom-resource.js][2]
+ * I want to implement CRUD: [example-crud.js][3]
 
 [1]: https://bitbucket.org/maghoff/resource-tree/src/tip/example-fileresource.js
 [2]: https://bitbucket.org/maghoff/resource-tree/src/tip/example-custom-resource.js
+[3]: https://bitbucket.org/maghoff/resource-tree/src/tip/example-crud.js
