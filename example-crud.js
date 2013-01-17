@@ -51,6 +51,7 @@ ListResource.prototype.http_GET = function (req, res) {
 };
 
 ListResource.prototype.http_POST = function (req, res) {
+	var self = this;
 	var form = new formidable.IncomingForm();
 
 	form.parse(req, function(err, fields, files) {
@@ -72,9 +73,13 @@ ListResource.prototype.http_POST = function (req, res) {
 				"Content-Type": files.file.type,
 				"body": data
 			};
-			var id = db.push(item);
+			var id = db.push(item) - 1;
 
-			var location = url.resolve(req.url, this.dataRoot + id);
+			var location = url.resolve(req.url, self.dataRoot + id);
+			console.log(req.url);
+			console.log(self.dataRoot);
+			console.log(id);
+			console.log(location);
 			res.writeHead(201, {
 				"Content-Type": "text/html;charset=utf-8",
 				"Location": location
