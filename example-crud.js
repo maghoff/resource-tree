@@ -29,15 +29,18 @@ ListResource.prototype.http_GET = function (req, res) {
 
 	res.write(
 		"<!DOCTYPE html><html><head><title>CRUD</title><script>" +
-		"function xhr(method, url) { var x = new XMLHttpRequest(); x.open(method,url,true); x.send(); }\n" +
-		"function del(d) { xhr('DELETE', d); }\n" +
+		"function reload() { location.reload(); }\n" +
+		"function xhr(method, url) { var x = new XMLHttpRequest(); x.open(method,url,true); x.onloadend=reload; return x; }\n" +
+		"function del(d) { xhr('DELETE', d).send(); }\n" +
+		"function put(d, c) { var x=xhr('PUT', d); x.setRequestHeader('Content-Type','text/plain'); x.send(c); }\n" +
 		"</script></head><body><ul>"
 	);
 	for (var d in db) {
 		var url = this.dataRoot + d;
 		res.write(
 			'<li id="' + d + '"><a href="' + url + '">' + db[d].name + '</a> ' +
-			'<a href="javascript:del(\'' + url + '\');var n=document.getElementById(\'' + d + '\');n.parentNode.removeChild(n);">[del]</a></li>'
+			'<form style="display:inline" onsubmit="javascript:put(\'' + url + '\', getElementById(\'name_' + d + '\').value);return false;"><input type="text" id="name_' + d + '" placeholder="New name"></input><input type="submit" value="Rename"></input></form> ' +
+			'<a href="javascript:del(\'' + url + '\')">[del]</a></li>'
 		);
 	}
 	res.end(
@@ -85,6 +88,18 @@ function DataResource(id) {
 		var data = db[id];
 		res.writeHead(200, {"Content-Type": data["Content-Type"]});
 		res.end(data.body);
+	};
+
+	this.http_PUT = function (req, res) {
+		var body = "";
+		req.on('data', function (chunk) {
+			body += chunk;
+		});
+		req.on('end', function () {
+			db[id].name = body;
+			res.writeHead(204);
+			res.end();
+		});
 	};
 
 	this.http_DELETE = function (req, res) {
