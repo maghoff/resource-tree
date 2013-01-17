@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 
 var resource_tree = require('./resource-tree');
+var fs = require('fs');
+var url = require('url');
+var formidable = require('formidable'); // npm install formidable
 
 
 var db = [
@@ -34,14 +37,51 @@ ListResource.prototype.http_GET = function (req, res) {
 	res.write("</script>");
 	res.write("</head>");
 	res.write("<body><ul>");
-	console.log(this);
 	for (var d in db) {
 		var url = this.dataRoot + d;
-		res.write('<li><a href="' + url + '">' + db[d].name + '</a> <div class="put"></div> <a href="javascript:del(\'' + url + '\')">[del]</a></li>');
+		res.write('<li><a href="' + url + '">' + db[d].name + '</a> <a href="javascript:del(\'' + url + '\')">[del]</a></li>');
 	}
 	res.write("</ul>");
+	res.write("<form enctype=\"multipart/form-data\" method=\"POST\">");
+	res.write("<input type='file' name='file' multiple='multiple'>");
+	res.write("<input type='submit'>");
+	res.write("</form>");
 	res.write("</body>");
 	res.end("</html>");
+};
+
+ListResource.prototype.http_POST = function (req, res) {
+	var form = new formidable.IncomingForm();
+
+	form.parse(req, function(err, fields, files) {
+		if (err) {
+			res.writeHead(500, {"Content-Type": "text/plain;charset=utf-8"});
+			res.end("Internal Server Error: " + err);
+			return;
+		}
+
+		fs.readFile(files.file.path, function (err, data) {
+			if (err) {
+				res.writeHead(500, {"Content-Type": "text/plain;charset=utf-8"});
+				res.end("Internal Server Error: " + err);
+				return;
+			}
+
+			var item = {
+				"name": files.file.name,
+				"Content-Type": files.file.type,
+				"body": data
+			};
+			var id = db.push(item);
+
+			var location = url.resolve(req.url, this.dataRoot + id);
+			res.writeHead(201, {
+				"Content-Type": "text/html;charset=utf-8",
+				"Location": location
+			});
+			res.end("<!DOCTYPE html><script>window.location = '" + location + "'</script>Go see <a href='" + location + "'>" + location);
+		});
+	});
 };
 
 
@@ -80,8 +120,8 @@ DataLookup.prototype.lookup = function (path, callback) {
 
 
 var root = {
-    '/': new ListResource('data/'),
-    'data': new DataLookup()
+	'/': new ListResource('data/'),
+	'data': new DataLookup()
 };
 
 resource_tree.createServer(root).listen(8080, "127.0.0.1");
