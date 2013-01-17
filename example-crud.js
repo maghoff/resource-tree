@@ -51,7 +51,7 @@ ListResource.prototype.http_GET = function (req, res) {
 
 function generate500(res, msg) {
 	res.writeHead(500, {"Content-Type": "text/plain;charset=utf-8"});
-	res.end("Internal Server Error: " + err);
+	res.end("Internal Server Error: " + msg);
 }
 
 ListResource.prototype.http_POST = function (req, res) {
