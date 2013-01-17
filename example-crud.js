@@ -27,46 +27,39 @@ ListResource.constructor = ListResource;
 ListResource.prototype.http_GET = function (req, res) {
 	res.writeHead(200, {"Content-Type": "text/html;charset=utf-8"});
 
-	res.write("<!DOCTYPE html>");
-	res.write("<html>");
-	res.write("<head>");
-	res.write("<title>CRUD</title>");
-	res.write("<script>");
-	res.write("function xhr(method, url) { var x = new XMLHttpRequest(); x.open(method,url,true); x.send(); }\n");
-	res.write("function del(d) { xhr('DELETE', d); }\n");
-	res.write("</script>");
-	res.write("</head>");
-	res.write("<body><ul>");
+	res.write(
+		"<!DOCTYPE html><html><head><title>CRUD</title><script>" +
+		"function xhr(method, url) { var x = new XMLHttpRequest(); x.open(method,url,true); x.send(); }\n" +
+		"function del(d) { xhr('DELETE', d); }\n" +
+		"</script></head><body><ul>"
+	);
 	for (var d in db) {
 		var url = this.dataRoot + d;
-		res.write('<li><a href="' + url + '">' + db[d].name + '</a> <a href="javascript:del(\'' + url + '\')">[del]</a></li>');
+		res.write(
+			'<li id="' + d + '"><a href="' + url + '">' + db[d].name + '</a> ' +
+			'<a href="javascript:del(\'' + url + '\');var n=document.getElementById(\'' + d + '\');n.parentNode.removeChild(n);">[del]</a></li>'
+		);
 	}
-	res.write("</ul>");
-	res.write("<form enctype=\"multipart/form-data\" method=\"POST\">");
-	res.write("<input type='file' name='file' multiple='multiple'>");
-	res.write("<input type='submit'>");
-	res.write("</form>");
-	res.write("</body>");
-	res.end("</html>");
+	res.end(
+		"</ul><form enctype=\"multipart/form-data\" method=\"POST\"><input type='file' name='file' multiple='multiple'>" +
+		"<input type='submit'></form></body></html>"
+	);
 };
+
+function generate500(res, msg) {
+	res.writeHead(500, {"Content-Type": "text/plain;charset=utf-8"});
+	res.end("Internal Server Error: " + err);
+}
 
 ListResource.prototype.http_POST = function (req, res) {
 	var self = this;
 	var form = new formidable.IncomingForm();
 
 	form.parse(req, function(err, fields, files) {
-		if (err) {
-			res.writeHead(500, {"Content-Type": "text/plain;charset=utf-8"});
-			res.end("Internal Server Error: " + err);
-			return;
-		}
+		if (err) return generate500(res, err);
 
 		fs.readFile(files.file.path, function (err, data) {
-			if (err) {
-				res.writeHead(500, {"Content-Type": "text/plain;charset=utf-8"});
-				res.end("Internal Server Error: " + err);
-				return;
-			}
+			if (err) return generate500(res, err);
 
 			var item = {
 				"name": files.file.name,
@@ -75,16 +68,11 @@ ListResource.prototype.http_POST = function (req, res) {
 			};
 			var id = db.push(item) - 1;
 
-			var location = url.resolve(req.url, self.dataRoot + id);
-			console.log(req.url);
-			console.log(self.dataRoot);
-			console.log(id);
-			console.log(location);
 			res.writeHead(201, {
 				"Content-Type": "text/html;charset=utf-8",
-				"Location": location
+				"Location": url.resolve(req.url, self.dataRoot + id)
 			});
-			res.end("<!DOCTYPE html><script>window.location = '" + location + "'</script>Go see <a href='" + location + "'>" + location);
+			res.end("<!DOCTYPE html><script>window.location = '" + req.url + "'</script>Go back to <a href='" + req.url + "'>the listing");
 		});
 	});
 };
