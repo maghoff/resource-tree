@@ -23,9 +23,11 @@ Examples by use-case:
 
  * I want to read a simple example: [example-fileresource.js][1]
  * I want to serve a file directly from disk: [example-fileresource.js][1]
+ * I want to serve a directory directly from disk: [example-directory.js][4]
  * I want to create a simple custom resource: [example-custom-resource.js][2]
  * I want to implement CRUD: [example-crud.js][3]
 
 [1]: https://bitbucket.org/maghoff/resource-tree/src/tip/example-fileresource.js
 [2]: https://bitbucket.org/maghoff/resource-tree/src/tip/example-custom-resource.js
 [3]: https://bitbucket.org/maghoff/resource-tree/src/tip/example-crud.js
+[4]: https://bitbucket.org/maghoff/resource-tree/src/tip/example-directory.js
