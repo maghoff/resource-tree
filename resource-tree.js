@@ -79,7 +79,8 @@ function FileResource(fullpath) {
 
     var contentTypes = {
         '.html': 'text/html',
-        '.js': 'text/javascript'
+        '.js': 'text/javascript',
+        '.css': 'text/css'
     };
 
     this.http_GET = function(req, res) {
