@@ -1,11 +1,8 @@
 {
   "name": "resource-tree",
-  "version": "0.0.0-7",
+  "version": "0.0.0-8",
   "description": "A useful separation of lookup (URL parsing/routing) and resources for implementing a HTTP server.",
   "main": "resource-tree.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "homepage": "https://bitbucket.org/maghoff/resource-tree",
   "repository": {
     "type": "hg",
