@@ -79,9 +79,12 @@ exports.MapLookup = require('./maplookup').MapLookup;
 exports.FileLookup = require('./filelookup').FileLookup;
 exports.DirectLookup = require('./directlookup').DirectLookup;
 exports.OneLevelLookup = require('./onelevellookup').OneLevelLookup;
+exports.SerialLookup = require('./seriallookup').SerialLookup;
 
 exports.Resource = require('./resource').Resource;
 exports.FileResource = require('./fileresource').FileResource;
+exports.DirectoryResource = require('./directoryresource').DirectoryResource;
+exports.RedirectResource = require('./redirectresource').RedirectResource;
 exports.PermanentRedirectResource = require('./permanentredirectresource').PermanentRedirectResource;
 
 exports.handleRequest = handleRequest;
