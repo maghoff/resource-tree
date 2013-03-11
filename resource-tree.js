@@ -9,8 +9,7 @@ var module = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'u
 
 
 // TODO: Should implement OPTIONS in this library
-// TODO: Should have dynamically configurable allowedMethods per server instance
-var allowedMethods = ["GET", "HEAD", "PUT", "POST", "DELETE"];
+var defaultAllowedMethods = ["GET", "HEAD", "PUT", "POST", "DELETE", "OPTIONS"];
 
 
 function methodNotAllowed(res, resource) {
@@ -31,9 +30,10 @@ function methodNotAllowed(res, resource) {
     res.end("Method Not Allowed");
 }
 
-function dispatchToResource(req, res, resource) {
+function dispatchToResource(req, res, resource, allowedMethods) {
     var functionObject = resource[functionName];
 
+    allowedMethods = allowedMethods || defaultAllowedMethods;
     if (allowedMethods.indexOf(req.method) !== -1) {
         var functionName = 'http_' + req.method;
         functionObject = resource[functionName];
@@ -45,7 +45,7 @@ function dispatchToResource(req, res, resource) {
     else methodNotAllowed(res, resource);
 }
 
-function handleRequest(root, req, res) {
+function handleRequest(root, req, res, allowedMethods) {
     console.log('[req] ' + req.url);
 
     res.setHeader("Server", module.name + "/" + module.version);
@@ -56,19 +56,19 @@ function handleRequest(root, req, res) {
             res.writeHead(404, {'Content-Type': 'text/plain'});
             res.end('Not found\n');
         } else {
-            dispatchToResource(req, res, resource);
+            dispatchToResource(req, res, resource, allowedMethods);
         }
     });
 }
 
-function handleRequestFunction(root) {
+function handleRequestFunction(root, allowedMethods) {
     return function (req, res) {
-        handleRequest(root, req, res);
+        handleRequest(root, req, res, allowedMethods);
     };
 }
 
-function createServer(root) {
-    return http.createServer(handleRequestFunction(root));
+function createServer(root, allowedMethods) {
+    return http.createServer(handleRequestFunction(root, allowedMethods));
 }
 
 
@@ -87,6 +87,7 @@ exports.DirectoryResource = require('./directoryresource').DirectoryResource;
 exports.RedirectResource = require('./redirectresource').RedirectResource;
 exports.PermanentRedirectResource = require('./permanentredirectresource').PermanentRedirectResource;
 
+exports.defaultAllowedMethods = defaultAllowedMethods;
 exports.handleRequest = handleRequest;
 exports.handleRequestFunction = handleRequestFunction;
 exports.createServer = createServer;
