@@ -12,7 +12,7 @@ var module = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'u
 var defaultAllowedMethods = ["GET", "HEAD", "PUT", "POST", "DELETE", "OPTIONS"];
 
 
-function methodNotAllowed(res, resource) {
+function methodNotAllowed(res, resource, allowedMethods) {
     var allow = [];
     for (var member in resource) {
         if (member.substr(0, 5) === 'http_') {
@@ -42,7 +42,7 @@ function dispatchToResource(req, res, resource, allowedMethods) {
     }
 
     if (typeof functionObject === 'function') functionObject.call(resource, req, res);
-    else methodNotAllowed(res, resource);
+    else methodNotAllowed(res, resource, allowedMethods);
 }
 
 function handleRequest(root, req, res, allowedMethods) {
