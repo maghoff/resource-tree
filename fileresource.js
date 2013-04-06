@@ -4,7 +4,7 @@ var verifyNew = require('./util').verifyNew;
 var Resource = require('./resource').Resource;
 
 
-function FileResource(fullpath) {
+function FileResource(fullpath, headers) {
     verifyNew(this, this.constructor.name);
     Resource.call(this);
 
@@ -15,18 +15,24 @@ function FileResource(fullpath) {
         '.svg': 'image/svg+xml'
     };
 
-    this.http_GET = function(req, res) {
-        var ext = path.extname(fullpath);
-        var contentType = contentTypes[ext] || 'text/plain';
+    this.fullpath = fullpath;
+    this.headers = {};
+    for (var header in headers) {
+        if (!headers.hasOwnProperty(header)) continue;
+        this.headers[header.toLowerCase()] = headers[header];
+    }
 
-        res.writeHead(200, {'Content-Type': contentType});
-        var f = fs.createReadStream(fullpath);
-        f.pipe(res);
-    };
+    var ext = path.extname(this.fullpath);
+    var contentType = this.headers['content-type'] || contentTypes[ext] || 'text/plain';
 }
-
 FileResource.prototype = new Resource();
 FileResource.constructor = FileResource;
+
+FileResource.prototype.http_GET = function(req, res) {
+    res.writeHead(200, this.headers);
+    var f = fs.createReadStream(this.fullpath);
+    f.pipe(res);
+}
 
 
 exports.FileResource = FileResource;
