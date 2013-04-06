@@ -23,7 +23,7 @@ function FileResource(fullpath, headers) {
     }
 
     var ext = path.extname(this.fullpath);
-    var contentType = this.headers['content-type'] || contentTypes[ext] || 'text/plain';
+    this.headers['content-type'] = this.headers['content-type'] || contentTypes[ext] || 'text/plain';
 }
 FileResource.prototype = new Resource();
 FileResource.constructor = FileResource;
