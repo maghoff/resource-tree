@@ -46,8 +46,6 @@ function dispatchToResource(req, res, resource, allowedMethods) {
 }
 
 function handleRequest(root, req, res, allowedMethods) {
-    console.log('[req] ' + req.url);
-
     res.setHeader("Server", module.name + "/" + module.version);
 
     pathname = url.parse(req.url).pathname;
