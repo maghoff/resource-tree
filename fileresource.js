@@ -29,9 +29,18 @@ FileResource.prototype = new Resource();
 FileResource.constructor = FileResource;
 
 FileResource.prototype.http_GET = function(req, res) {
-    res.writeHead(200, this.headers);
-    var f = fs.createReadStream(this.fullpath);
-    f.pipe(res);
+    fs.stat(this.fullpath, function (err, stats) {
+        if (err) {
+            res.writeHead(500, {'Content-Type': 'text/plain'});
+            res.end("Internal Server Error");
+            return;
+        }
+
+        res.setHeader("content-length", stats.size);
+        res.writeHead(200, this.headers);
+        var f = fs.createReadStream(this.fullpath);
+        f.pipe(res);
+    }.bind(this));
 }
 
 
